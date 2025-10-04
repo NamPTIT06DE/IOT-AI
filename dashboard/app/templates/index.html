@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Automated Warehouse Monitoring System - Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h2>Automated Warehouse Monitoring System</h2>
+    <p class="sub">Realtime charts for Temperature / Humidity / Light</p>
+  </header>
+
+  <section class="controls">
+    <label>
+      Device ID (gateway/node):
+      <input id="device" type="text" placeholder="esp32/dht11">
+    </label>
+    <label>
+      Limit:
+      <input id="limit" type="number" min="10" max="5000" value="50">
+    </label>
+    <button id="refreshBtn">Refresh</button>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h3>Temperature (°C)</h3>
+      <canvas id="tempChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Humidity (%)</h3>
+      <canvas id="humChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Light (Lux)</h3>
+      <canvas id="luxChart"></canvas>
+    </div>
+    <div class="card">
+      <h3>Latest Samples</h3>
+      <table id="tbl">
+        <thead><tr><th>Time</th><th>Gateway/Node</th><th>T</th><th>H</th><th>Lux</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    const AI_SERVER_URL = "{{ AI_SERVER_URL }}";
+    const DEFAULT_DEVICE_ID = "{{ DEFAULT_DEVICE_ID }}";
+    const DEFAULT_LIMIT = "{{ DEFAULT_LIMIT }}";
+
+    const elDevice = document.getElementById('device');
+    const elLimit  = document.getElementById('limit');
+    const btnRefresh = document.getElementById('refreshBtn');
+
+    // Khởi tạo giá trị form
+    elDevice.value = DEFAULT_DEVICE_ID;
+    elLimit.value = DEFAULT_LIMIT;
+
+    // Chart instances
+    let tempChart, humChart, luxChart;
+
+    function buildLineChart(ctx, label, labels, data) {
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{ label, data }]
+        },
+        options: {
+          responsive: true,
+          animation: false,
+          scales: {
+            x: { ticks: { maxRotation: 0 } }
+          }
+        }
+      });
+    }
+
+    async function loadData() {
+      const deviceId = elDevice.value;
+      const limit = parseInt(elLimit.value || '50', 10);
+
+      // Gọi ai-server: /api/data?limit=...
+      const url = `${AI_SERVER_URL}/api/data?limit=${limit}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // Chuẩn bị dữ liệu chart
+      const labels = data.map(d => {
+        const ts = d.ts || d.ts_iso; // tuỳ server
+        if (typeof ts === 'number') return new Date(ts*1000).toLocaleTimeString();
+        if (typeof ts === 'string') return new Date(ts).toLocaleTimeString();
+        return '';
+      });
+      const temps = data.map(d => d.temperature);
+      const hums  = data.map(d => d.humidity);
+      const luxs  = data.map(d => d.lux);
+      const devs  = data.map(d => (d.device_id || (d.gateway_id + '/' + d.node_id)));
+
+      // Bảng
+      const tb = document.querySelector('#tbl tbody');
+      tb.innerHTML = '';
+      data.forEach((d, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${labels[i]}</td>
+                        <td>${devs[i] || deviceId}</td>
+                        <td>${temps[i] ?? ''}</td>
+                        <td>${hums[i] ?? ''}</td>
+                        <td>${luxs[i] ?? ''}</td>`;
+        tb.appendChild(tr);
+      });
+
+      // Chart
+      if (tempChart) tempChart.destroy();
+      if (humChart)  humChart.destroy();
+      if (luxChart)  luxChart.destroy();
+
+      tempChart = buildLineChart(document.getElementById('tempChart'), 'Temperature', labels, temps);
+      humChart  = buildLineChart(document.getElementById('humChart'),  'Humidity',    labels, hums);
+      luxChart  = buildLineChart(document.getElementById('luxChart'),  'Light',       labels, luxs);
+    }
+
+    btnRefresh.addEventListener('click', loadData);
+    // Tự refresh vài giây một lần (tuỳ chọn)
+    setInterval(loadData, 5000);
+    loadData();
+  </script>
+</body>
+</html>
