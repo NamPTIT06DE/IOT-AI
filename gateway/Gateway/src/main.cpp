@@ -4,21 +4,30 @@
 #include<PubSubClient.h>
 #include<WiFi.h>
 
-// WiFi Configuration - Cập nhật theo WiFi của bạn
-const char* wifi_name="HUAWEI P30 Pro";  // Thay đổi tên WiFi
-const char* wifi_password="1234567890";  // Thay đổi mật khẩu WiFi
+const char* wifi_name="HUAWEI P30 Pro";  
+const char* wifi_password="1234567890";  
 
-// MQTT Docker Configuration
-const char* mqtt_server="192.168.43.246";  // IP WiFi của máy host
-const int mqtt_port=1888;  // Port MQTT Docker mapped (0.0.0.0:1888->1888/tcp)
+const char* mqtt_server="192.168.43.246";  
+const int mqtt_port=1888;  
+
+
+const char* mac_id = "test"; 
+const char* topic = "gateway1/node/test";  
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-DHT dht(4, DHT11); // DHT11 gắn chân D4
+DHT dht(4, DHT11); 
 
-// Forward declarations - Khai báo trước các hàm
-void callback(char* topic, byte* payload, unsigned int length);
-void subscribeToTopics();
+struct SensorReading {
+  float temperature;
+  float humidity;
+  unsigned long timestamp;
+};
+
+SensorReading sensorBuffer[5];   // Buffer để lưu 5 lần đọc (10s / 2s = 5)
+int bufferIndex = 0;             // Index hiện tại trong buffer
+unsigned long lastReadTime = 0;  // Lần đọc sensor cuối
+unsigned long lastSendTime = 0;  // Lần gửi data cuối
 
 void setup() {
   Serial.begin(115200);
@@ -33,82 +42,129 @@ void setup() {
 }
 
 void connectMQTT(){
-  client.setServer(mqtt_server,mqtt_port);
-  client.setCallback(callback);  // Set callback function để xử lý message nhận được
+  client.setServer(mqtt_server, mqtt_port);
+  client.setBufferSize(2048);  // Tăng buffer size cho MQTT client
   
-  while(!client.connected()){
-    Serial.println("Connecting to MQTT...");
+  int attempts = 0;
+  while(!client.connected() && attempts < 5){
+    Serial.printf("Connecting to MQTT... (attempt %d/5)\n", attempts + 1);
     String clientId = "ESP32-" + WiFi.macAddress();
+    
     if(client.connect(clientId.c_str())){
-      Serial.println("MQTT connected!");
-      subscribeToTopics();  // Subscribe các topic sau khi kết nối thành công
-    }else{
-      Serial.print("failed with state ");
-      Serial.println(client.state());
-      delay(2000);
+      Serial.println("✓ MQTT connected!");
+      Serial.printf("Client ID: %s\n", clientId.c_str());
+      break;
+    } else {
+      Serial.printf("✗ MQTT connection failed with state %d\n", client.state());
+      Serial.println("MQTT Error codes: -4=timeout, -3=connection lost, -2=connect failed, -1=disconnected, 1=bad protocol, 2=client rejected, 3=server unavailable, 4=bad credentials, 5=not authorized");
+      attempts++;
+      delay(3000);
     }
   }
+  
+  if(!client.connected()) {
+    Serial.println("Failed to connect to MQTT after 5 attempts");
+  }
 }
-void publishData(){
-  float h=dht.readHumidity();
-  float t=dht.readTemperature();
-  if(isnan(h)||isnan(t)){
+void readSensor(){
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  
+  if(isnan(h) || isnan(t)){
     Serial.println("Failed to read from DHT sensor");
     return;
   }
-  StaticJsonDocument<200> doc;
-  doc["temperature"]=t;
-  doc["humidity"]=h;
-  doc["timestamp"]=millis();  // Thêm timestamp để tracking
-  char jsonBuffer[512];
-  serializeJson(doc,jsonBuffer);
-  Serial.print("PUBLISHED: ");
-  Serial.println(jsonBuffer);
-  client.publish("esp32/dht11", jsonBuffer, true);  // retained message
+  
+  // Lưu vào buffer
+  sensorBuffer[bufferIndex].temperature = t;
+  sensorBuffer[bufferIndex].humidity = h;
+  sensorBuffer[bufferIndex].timestamp = millis() / 1000;
+  
+  Serial.printf("Reading %d: T=%.2f°C, H=%.2f%%, Time=%lu\n", 
+                bufferIndex + 1, t, h, sensorBuffer[bufferIndex].timestamp);
+  
+  bufferIndex++;
+  
+  // Reset buffer khi đầy
+  if(bufferIndex >= 5) {
+    bufferIndex = 0;
+  }
 }
 
-// Callback function khi nhận được message từ MQTT
-void callback(char* topic, byte* payload, unsigned int length) {
-  String message;
-  for (int i = 0; i < length; i++) {
-    message += (char)payload[i];
-  }
-  Serial.print("RECEIVED [");
-  Serial.print(topic);
-  Serial.print("]: ");
-  Serial.println(message);
-  
-  // Parse JSON data nhận được
-  StaticJsonDocument<200> doc;
-  DeserializationError error = deserializeJson(doc, message);
-  
-  if (error) {
-    Serial.print("deserializeJson() failed: ");
-    Serial.println(error.c_str());
+void publishData(){
+  // Kiểm tra kết nối MQTT trước khi publish
+  if(!client.connected()) {
+    Serial.println("MQTT not connected, skipping publish");
     return;
   }
   
-  // Xử lý dữ liệu nhận được
-  if (doc.containsKey("temperature") && doc.containsKey("humidity")) {
-    float temp = doc["temperature"];
-    float hum = doc["humidity"];
-    unsigned long timestamp = doc["timestamp"];
-    unsigned long delay_ms = millis() - timestamp;
-    Serial.printf("-> Temp: %.2f°C, Hum: %.2f%%, Delay: %lums\n", temp, hum, delay_ms);
+  // Tạo JSON theo format mà AI server mong đợi
+  StaticJsonDocument<2048> doc;  // Tăng buffer size
+  doc["MAC_Id"] = mac_id;
+  
+  // Tạo array data với 5 phần tử
+  JsonArray dataArray = doc.createNestedArray("data");
+  
+  for(int i = 0; i < 5; i++) {
+    JsonObject sensorReading = dataArray.createNestedObject();
+    sensorReading["temperature"] = round(sensorBuffer[i].temperature * 100) / 100.0;  // Làm tròn 2 chữ số
+    sensorReading["humidity"] = round(sensorBuffer[i].humidity * 100) / 100.0;
+    sensorReading["timestamp"] = sensorBuffer[i].timestamp;
   }
+  
+  // Kiểm tra size của JSON
+  size_t jsonSize = measureJson(doc);
+  Serial.printf("JSON size: %d bytes\n", jsonSize);
+  
+  if(jsonSize > 1500) {  // MQTT có giới hạn message size
+    Serial.println("JSON too large, splitting not implemented yet");
+    return;
+  }
+  
+  char jsonBuffer[2048];  // Tăng buffer size
+  serializeJson(doc, jsonBuffer);
+  
+  // In ra Serial để debug
+  Serial.println("=== Publishing 5 sensor readings ===");
+  Serial.printf("MQTT State: %d (0=connected)\n", client.state());
+  Serial.print("Topic: ");
+  Serial.println(topic);
+  Serial.printf("Data length: %d\n", strlen(jsonBuffer));
+  Serial.print("Data: ");
+  Serial.println(jsonBuffer);
+  
+  // Publish data với retained = false và QoS = 0
+  bool publishResult = client.publish(topic, jsonBuffer, false);
+  
+  if(publishResult){
+    Serial.println("✓ Data published successfully");
+  } else {
+    Serial.printf("✗ Failed to publish data (MQTT state: %d)\n", client.state());
+    Serial.println("Reconnecting to MQTT...");
+    connectMQTT();  // Thử kết nối lại
+  }
+  Serial.println("=====================================");
 }
-void subscribeToTopics() {
-  // Subscribe to các topic cần thiết
-  client.subscribe("esp32/dht11");  // Subscribe lại chính topic mình publish
-  client.subscribe("warehouse/+/sensors");  // Subscribe topic warehouse
-  client.subscribe("control/esp32");  // Topic để điều khiển ESP32
-  Serial.println("Subscribed to topics");
-}
+
+
 void loop(){
    if(!client.connected()){
     connectMQTT();
    }
-   //publishData();  // Gửi dữ liệu DHT11
-   client.loop();  // Xử lý MQTT messages (quan trọng cho subscribe)
-   delay(2000);
+   
+   unsigned long currentTime = millis();
+   
+   // Đọc cảm biến mỗi 2 giây
+   if(currentTime - lastReadTime >= 2000) {
+     readSensor();
+     lastReadTime = currentTime;
+   }
+   
+   // Gửi dữ liệu mỗi 10 giây
+   if(currentTime - lastSendTime >= 10000) {
+     publishData();
+     lastSendTime = currentTime;
+   }
+   
+   delay(100);  
 }

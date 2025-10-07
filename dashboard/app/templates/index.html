@@ -7,8 +7,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <nav style="background: #007bff; color: white; padding: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="margin: 0;">IoT System Dashboard</h2>
+      <div>
+        <a href="/" style="color: white; text-decoration: none; margin-right: 20px;">
+          📋 Nodes List
+        </a>
+        <a href="/charts" style="color: white; text-decoration: none;">
+          📊 Charts
+        </a>
+      </div>
+    </div>
+  </nav>
+  
   <header>
-    <h2>Automated Warehouse Monitoring System</h2>
+    <h2>Sensor Data Charts</h2>
     <p class="sub">Realtime charts for Temperature / Humidity / Light</p>
   </header>
 
@@ -56,7 +70,9 @@
     const btnRefresh = document.getElementById('refreshBtn');
 
     // Khởi tạo giá trị form
-    elDevice.value = DEFAULT_DEVICE_ID;
+    const urlParams = new URLSearchParams(window.location.search);
+    const nodeParam = urlParams.get('node');
+    elDevice.value = nodeParam || DEFAULT_DEVICE_ID;
     elLimit.value = DEFAULT_LIMIT;
 
     // Chart instances
@@ -83,10 +99,25 @@
       const deviceId = elDevice.value;
       const limit = parseInt(elLimit.value || '50', 10);
 
-      // Gọi ai-server: /api/data?limit=...
-      const url = `${AI_SERVER_URL}/api/data?limit=${limit}`;
+      // Gọi ai-server: /data-sensor/{id_node} hoặc /api/data
+      let url;
+      if (deviceId && deviceId !== DEFAULT_DEVICE_ID) {
+        url = `${AI_SERVER_URL}/data-sensor/${encodeURIComponent(deviceId)}`;
+      } else {
+        url = `${AI_SERVER_URL}/api/data?limit=${limit}`;
+      }
+      
       const res = await fetch(url);
-      const data = await res.json();
+      let data = await res.json();
+      
+      // Handle different response formats
+      if (data.status === 'success' && data.data) {
+        data = data.data;
+      } else if (Array.isArray(data)) {
+        // data is already an array
+      } else {
+        data = [];
+      }
 
       // Chuẩn bị dữ liệu chart
       const labels = data.map(d => {

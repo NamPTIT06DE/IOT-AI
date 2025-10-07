@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Nodes Management - Dashboard UPDATED</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .node-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #007bff;
+            cursor: pointer;
+        }
+        .node-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .node-card.online {
+            border-left-color: #28a745;
+        }
+        .node-card.offline {
+            border-left-color: #dc3545;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .node-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-microchip me-2"></i>
+                IoT System Dashboard
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="/">
+                    <i class="fas fa-list me-1"></i>
+                    Nodes
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Main Content -->
+    <div class="container my-4">
+        <!-- Total Nodes Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-microchip fa-2x mb-2"></i>
+                        <h4 id="totalNodes">0</h4>
+                        <small>Total Nodes</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading nodes...</p>
+        </div>
+
+        <!-- Nodes Container -->
+        <div id="nodesContainer" class="row" style="display: none;">
+            <!-- Nodes will be populated here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-5" style="display: none;">
+            <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No nodes found</h5>
+            <p class="text-muted">No IoT nodes available at this time</p>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-primary refresh-btn" id="refreshBtn" title="Refresh">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const AI_SERVER_URL = "http://localhost:8000";  // Browser sẽ gọi qua host
+        
+        let nodesData = [];
+        let refreshInterval;
+
+        // DOM Elements
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const nodesContainer = document.getElementById('nodesContainer');
+        const emptyState = document.getElementById('emptyState');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const totalNodesEl = document.getElementById('totalNodes');
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toastHtml = `
+                <div class="toast align-items-center text-bg-${type} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            const toastContainer = document.querySelector('.toast-container');
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = toastContainer.lastElementChild;
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+
+        // Load nodes from API
+        async function loadNodes() {
+            try {
+                console.log('DEBUG: Starting to load nodes...');
+                console.log('DEBUG: AI_SERVER_URL =', AI_SERVER_URL);
+                
+                showLoading(true);
+                
+                // ✅ Try proxy API first, fallback to direct
+                let response;
+                try {
+                    console.log('DEBUG: Trying proxy API /api/nodes');
+                    response = await fetch('/api/nodes');
+                    console.log('DEBUG: Proxy API response status:', response.status);
+                } catch (proxyError) {
+                    console.log('DEBUG: Proxy failed, trying direct API:', proxyError);
+                    response = await fetch(`${AI_SERVER_URL}/get/nodes`);
+                    console.log('DEBUG: Direct API response status:', response.status);
+                }
+                
+                const result = await response.json();
+                console.log('DEBUG: API Response:', result);
+                
+                if (result.status === 'success') {
+                    nodesData = result.nodes || [];
+                    console.log('DEBUG: Nodes data:', nodesData);
+                    console.log('DEBUG: Number of nodes:', nodesData.length);
+                    
+                    renderNodes();
+                    updateTotalNodes();
+                } else {
+                    console.error('DEBUG: API returned error status:', result.status);
+                    throw new Error(result.message || 'Failed to load nodes');
+                }
+            } catch (error) {
+                console.error('DEBUG: Error loading nodes:', error);
+                showToast(`Error loading nodes: ${error.message}`, 'danger');
+                showEmptyState();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Render nodes
+        function renderNodes() {
+            console.log('DEBUG: renderNodes called with', nodesData.length, 'nodes');
+            
+            if (nodesData.length === 0) {
+                console.log('DEBUG: No nodes, showing empty state');
+                showEmptyState();
+                return;
+            }
+            
+            console.log('DEBUG: Rendering nodes HTML...');
+
+            const nodesHtml = nodesData.map(node => {
+                const createdDate = new Date(node.created_at * 1000).toLocaleString();
+                const nodeId = node.node_id || 'Unknown';
+                const macId = node.mac_id || 'Unknown';
+                const status = Math.random() > 0.3 ? 'online' : 'offline'; // Simulate status
+                
+                return `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card node-card ${status}" onclick="viewNodeDetails('${nodeId}')">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">
+                                        <i class="fas fa-microchip me-2"></i>
+                                        ${macId}
+                                    </h6>
+                                    <span class="badge bg-${status === 'online' ? 'success' : 'danger'} status-badge">
+                                        ${status.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div class="node-info">
+                                    <small class="d-block">
+                                        <i class="fas fa-id-card me-1"></i>
+                                        ID: ${nodeId}
+                                    </small>
+                                    <small class="d-block">
+                                        <i class="fas fa-clock me-1"></i>
+                                        Created: ${createdDate}
+                                    </small>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewCharts('${nodeId}')">
+                                        <i class="fas fa-chart-line me-1"></i>Charts
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); sendCommand('${nodeId}')">
+                                        <i class="fas fa-paper-plane me-1"></i>Command
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            nodesContainer.innerHTML = nodesHtml;
+            nodesContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+            updateTotalNodes();
+        }
+
+
+
+        // Show/hide loading
+        function showLoading(show) {
+            if (show) {
+                loadingSpinner.style.display = 'block';
+                nodesContainer.style.display = 'none';
+                emptyState.style.display = 'none';
+            } else {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        // Update total nodes count
+        function updateTotalNodes() {
+            totalNodesEl.textContent = nodesData.length;
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            nodesContainer.style.display = 'none';
+            emptyState.style.display = 'block';
+            updateTotalNodes();
+        }
+
+
+
+        // View node details
+        function viewNodeDetails(nodeId) {
+            // Navigate to charts page with specific node
+            window.location.href = `/charts?node=${encodeURIComponent(nodeId)}`;
+        }
+
+        // View charts for specific node
+        function viewCharts(nodeId) {
+            window.location.href = `/charts?node=${encodeURIComponent(nodeId)}`;
+        }
+
+        // Send command to node
+        function sendCommand(nodeId) {
+            // Simple prompt for now - you can make this a modal
+            const command = prompt(`Enter command for node ${nodeId}:`);
+            if (command) {
+                // TODO: Implement command sending
+                showToast(`Command sent to ${nodeId}: ${command}`, 'info');
+            }
+        }
+
+        // Event listeners
+        refreshBtn.addEventListener('click', () => {
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            loadNodes().finally(() => {
+                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            });
+        });
+
+        // Auto refresh every 30 seconds
+        function startAutoRefresh() {
+            refreshInterval = setInterval(loadNodes, 30000);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNodes();
+            startAutoRefresh();
+        });
+
+        // Stop auto refresh when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

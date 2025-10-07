@@ -8,6 +8,13 @@ Hệ thống IoT Warehouse Monitoring với Docker Compose.
 # Build và start tất cả services
 docker-compose up -d --build
 
+
+
+# chạy lại container dashboard
+docker-compose rm -s dashboard
+docker-compose build --no-cache --pull dashboard
+# Start lại dashboard
+docker-compose up -d dashboard
 # View logs
 docker-compose logs -f
 

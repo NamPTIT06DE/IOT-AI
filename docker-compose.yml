@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: iot-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+      - mongodb-config:/data/configdb
+    networks:
+      - iot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # MQTT Broker (Mosquitto)
   mosquitto:
     image: eclipse-mosquitto:2.0
@@ -24,19 +43,15 @@ services:
     container_name: iot-ai-server
     ports:
       - "8000:8000"
-    environment:
-      - MQTT_HOST=mosquitto
-      - MQTT_PORT=1888
-      - BROKER_BASE_TOPIC=warehouse
-      - DATA_CSV=/app/data/warehouse_data.csv
-      - MODELS_DIR=/app/models
+    env_file:
+      - docker.env
     volumes:
-      - ./ai-server/data:/app/data
       - ./ai-server/models:/app/models
     networks:
       - iot-network
     depends_on:
       - mosquitto
+      - mongodb 
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
@@ -53,10 +68,8 @@ services:
     container_name: iot-dashboard
     ports:
       - "8080:8080"
-    environment:
-      - AI_SERVER_URL=http://ai-server:8000
-      - DEFAULT_DEVICE_ID=esp32/dht11
-      - DEFAULT_LIMIT=50
+    env_file:
+      - docker.env
     networks:
       - iot-network
     depends_on:
@@ -76,3 +89,5 @@ networks:
 volumes:
   mosquitto-data:
   mosquitto-log:
+  mongodb-data:      
+  mongodb-config:

@@ -1,13 +1,18 @@
 :root { --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22d3ee; }
 *{box-sizing:border-box}
-body{margin:0;padding:24px;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b1220;color:var(--text)}
-header{margin-bottom:16px}
+body{margin:0;padding:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b1220;color:var(--text)}
+nav{background:#007bff;color:white;padding:1rem;margin-bottom:0}
+nav div{display:flex;justify-content:space-between;align-items:center}
+nav h2{margin:0;color:white}
+nav a{color:white;text-decoration:none;margin-left:20px;padding:5px 10px;border-radius:5px;transition:background 0.2s}
+nav a:hover{background:rgba(255,255,255,0.1)}
+header{margin:24px;margin-bottom:16px}
 h2{margin:0 0 6px}
 .sub{color:var(--muted);margin:0}
-.controls{display:flex;gap:12px;align-items:center;margin:16px 0}
+.controls{display:flex;gap:12px;align-items:center;margin:16px 24px}
 .controls input{padding:6px 8px;border:1px solid #263146;border-radius:8px;background:#0f172a;color:#e5e7eb}
 .controls button{padding:8px 12px;border:0;border-radius:8px;background:var(--accent);color:#001018;font-weight:600;cursor:pointer}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:0 24px}
 .card{background:#0f172a;border:1px solid #263146;border-radius:12px;padding:12px;box-shadow:0 0 0 1px rgba(255,255,255,0.02) inset}
 .card h3{margin:0 0 8px}
 table{width:100%;border-collapse:collapse}

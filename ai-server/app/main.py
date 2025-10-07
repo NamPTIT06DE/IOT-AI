@@ -1,139 +1,154 @@
 import os, json, time, asyncio
 from pathlib import Path
+from typing import Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import pandas as pd
 import paho.mqtt.client as mqtt
+from pymongo import MongoClient
+from collections import deque, defaultdict
 
 load_dotenv()
 
-MQTT_HOST = os.getenv("MQTT_HOST", "localhost")
-MQTT_PORT = int(os.getenv("MQTT_PORT", "1888"))  # Docker MQTT port
-BASE_TOPIC = os.getenv("BROKER_BASE_TOPIC", "warehouse")
-DATA_CSV = Path(os.getenv("DATA_CSV", "./data/warehouse_data.csv"))
-MODELS_DIR = Path(os.getenv("MODELS_DIR", "./models"))
+MQTT_HOST=os.getenv("MQTT_HOST", "localhost")
+MQTT_PORT=int(os.getenv("MQTT_PORT", "1888"))
+BROKER_BASE_TOPIC_NODE=os.getenv("BROKER_BASE_TOPIC_NODE", "gateway1/node")
+BROKER_TOPIC_CMD=os.getenv("BROKER_TOPIC_CMD", "gateway1/cmd")
+MONGO_URI =os.getenv("MONGO_URI", "mongodb://iot-mongodb:27017/iot_data")
+MONGO_DATA_SENSOR=os.getenv("MONGO_DATA_SENSOR", "data_sensor")
+MONGO_LIST_NODE=os.getenv("MONGO_LIST_NODE", "list_node")
+mqtt_client=mqtt.Client()
 
-DATA_CSV.parent.mkdir(parents=True, exist_ok=True)
-if not DATA_CSV.exists():
-    DATA_CSV.write_text("ts_iso,gateway_id,node_id,temperature,humidity,lux\n")
 
-last_samples = {}
+# lưu buffer riêng cho mỗi node
+sensor_buffers: Dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
+app=FastAPI()
 
-# MQTT client
-mqttc = mqtt.Client()  # Bỏ CallbackAPIVersion.VERSION2
+#lay danh sach cac node tu db
+def get_nodes():
+    try:
+        client=MongoClient(MONGO_URI)
+        db_name_node=os.getenv("MONGO_DB", "iot_data")
+        collection_list_node=os.getenv("MONGO_LIST_NODE", "list_node")
+        db=client[db_name_node]
+        collection=db[collection_list_node]
+        nodes=list(collection.find({}, {"_id": 0}))
+        return {"status": "success", "nodes": nodes}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
-def now_ts(): return int(time.time())
+# luu du lieu cam bien vao db
+def save_mongodb(data):
+    try:
+        client=MongoClient(MONGO_URI)
+        db_name_data=os.getenv("MONGO_DB", "iot_data")
+        collection_data_sensor=os.getenv("MONGO_DATA_SENSOR", "data_sensor")
+        db=client[db_name_data]
+        collection=db[collection_data_sensor]
+        collection.insert_one(data)
 
-async def retry_mqtt_connection():
-    """Retry MQTT connection with exponential backoff"""
-    retry_count = 0
-    max_retries = 10
-    
-    while retry_count < max_retries:
-        try:
-            await asyncio.sleep(2 ** retry_count)  # Exponential backoff
-            print(f"Retrying MQTT connection (attempt {retry_count + 1}/{max_retries})")
-            mqttc.connect(MQTT_HOST, MQTT_PORT, 60)
-            mqttc.loop_start()
-            print("MQTT reconnection successful!")
-            return
-        except Exception as e:
-            retry_count += 1
-            print(f"MQTT retry {retry_count} failed: {e}")
-    
-    print("Max MQTT retry attempts reached. MQTT connection failed.")
-
-def save_row(row):
-    with DATA_CSV.open("a") as f:
-        f.write(",".join(map(str, row.values())) + "\n")
-
-def on_connect(client, userdata, flags, rc, props=None):
-    print(f"MQTT connected to {MQTT_HOST}:{MQTT_PORT} - RC: {rc}")
-    if rc == 0:
-        print("MQTT connection successful!")
-        # Subscribe to ESP32 topic
-        client.subscribe("esp32/dht11", qos=1)
-        print("Subscribed to esp32/dht11")
-        # Also subscribe to warehouse topic for future expansion
-        client.subscribe(f"{BASE_TOPIC}/+/sensors", qos=1)
-        print(f"Subscribed to {BASE_TOPIC}/+/sensors")
-    else:
-        print(f"MQTT connection failed with code {rc}")
+    except Exception as e:
+        print(f"Failed to save data to MongoDB: {e}")
 
 def on_message(client, userdata, msg):
+    print(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
     try:
-        data = json.loads(msg.payload.decode())
+        payload=json.loads(msg.payload.decode())
+        sensor_data=payload.get("data", [])
+        id_node=msg.topic
         
-        # Handle ESP32 DHT11 data format
-        if msg.topic == "esp32/dht11":
-            row = {
-                "ts_iso": pd.Timestamp.utcnow().isoformat(),
-                "gateway_id": "esp32",
-                "node_id": "dht11",
-                "temperature": data.get("temperature"),
-                "humidity": data.get("humidity"),
-                "lux": 0  # ESP32 doesn't have lux sensor
+        payload_to_save = payload.copy()
+        payload_to_save.update({"id_node": id_node})
+
+        for i, reading in enumerate(sensor_data):
+            document={
+                "id_node":id_node,
+                "mac_id": payload.get("MAC_Id"),
+                "temperature": reading.get("temperature"),
+                "humidity": reading.get("humidity"),
+                "timestamp": reading.get("timestamp", int(time.time())),
+                "topic": msg.topic
             }
-            save_row(row)
-            last_samples["esp32/dht11"] = row
-        else:
-            # Handle warehouse sensor format
-            gw, nid = data.get("gateway_id"), data.get("node_id")
-            row = {
-                "ts_iso": pd.Timestamp.utcnow().isoformat(),
-                "gateway_id": gw,
-                "node_id": nid,
-                "temperature": data.get("temperature"),
-                "humidity": data.get("humidity"),
-                "lux": data.get("lux")
-            }
-            save_row(row)
-            last_samples[f"{gw}/{nid}"] = row
+            #them vao buffer
+            sensor_buffers[id_node].append(document)
+        save_mongodb(payload_to_save)
     except Exception as e:
-        print("Parse error:", e)
+        print(f"Failed to process message: {e}")
+def callback_on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected successfully!")     
+        result = get_nodes()       
+        if result["status"] == "success":
+            nodes = result["nodes"]              
+            for node in nodes:
+                node_id = node.get("node_id")
+                if node_id:
+                    client.subscribe(node_id)
+                    print(f"Subscribed to {node_id}")
+        else:
+            print(f"Error getting nodes: {result['message']}")
+    else:
+        print(f"Connection failed: {rc}")
 
-mqttc.on_connect = on_connect
-mqttc.on_message = on_message
+# ket noi mqtt
+mqtt_client.on_connect=callback_on_connect
+mqtt_client.on_message=on_message
+try:
+    mqtt_client.connect(MQTT_HOST, MQTT_PORT, 60)
+    mqtt_client.loop_start()
+    print(f"Connected to MQTT Broker {MQTT_HOST}:{MQTT_PORT}")
+except Exception as e:
+    print(f"Failed to connect to MQTT Broker {MQTT_HOST}:{MQTT_PORT}, error: {e}")
 
-# FastAPI app
-app = FastAPI(title="Warehouse AI Server")
+
+@app.get("/data-sensor/{id_node:path}")
+def get_data_sensor(id_node: str, limit: int = 20):
+    if id_node not in sensor_buffers:
+        return {"status": "success", "data": []}
+    buffer_data = list(sensor_buffers[id_node])
+    limited_data = buffer_data[-limit:] if len(buffer_data) > limit else buffer_data  
+    # Chuyển đổi timestamp thành time format cho frontend
+    for item in limited_data:
+        if 'timestamp' in item:
+            item['time'] = time.strftime('%H:%M:%S', time.localtime(item['timestamp']))
+    
+    return {"status": "success", "data": limited_data}
+@app.get("/add/node")
+def add_node(mac_id: str):
+    try:
+        client=MongoClient(MONGO_URI)
+        db_name_node=os.getenv("MONGO_DB", "iot_data")
+        collection_list_node=os.getenv("MONGO_LIST_NODE", "list_node")
+        db=client[db_name_node]
+        collection=db[collection_list_node]
+        existing_node=collection.find_one({"mac_id": mac_id})
+        node_id=BROKER_BASE_TOPIC_NODE + f"/{mac_id}"
+        if existing_node:
+            return {"status": "exists", "message": "Node already exists", "node_id": existing_node.get("node_id"), "created": False}
+        new_node={"mac_id": mac_id, "created_at": int(time.time()), "node_id": node_id}
+        collection.insert_one(new_node)
+        return {"status": "success", "message": "Node registered successfully", "node_id": new_node.get("node_id"), "created": True}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/get/nodes")
+def get_list_nodes():
+    return get_nodes()
+    
+@app.put("/cmd/sensor/{id_node}")
+def cmd_sensor(id_node: str, command: dict):
+    topic=f"{BROKER_TOPIC_CMD}"
+    payload=json.dumps(command)
+    mqtt_client.publish(topic, payload)
+    print(f"Published command to {topic}: {payload}")
+    return {"status": "success"}
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Hoặc ["http://localhost:8080"] cho production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def startup():
-    print(f"Starting AI Server - Connecting to MQTT at {MQTT_HOST}:{MQTT_PORT}")
-    try:
-        mqttc.connect(MQTT_HOST, MQTT_PORT, 60)
-        mqttc.loop_start()
-        print("MQTT client started successfully")
-    except Exception as e:
-        print(f"Failed to connect to MQTT: {e}")
-        # Retry connection after delay
-        import asyncio
-        asyncio.create_task(retry_mqtt_connection())
-
-@app.on_event("shutdown")
-def shutdown():
-    mqttc.loop_stop()
-    mqttc.disconnect()
-
-@app.get("/health")
-def health():
-    return {"ok": True, "mqtt": MQTT_HOST, "data_csv": str(DATA_CSV)}
-
-@app.get("/api/last")
-def api_last():
-    return last_samples
-
-@app.get("/api/data")
-def api_data(limit: int = 50):
-    if not DATA_CSV.exists(): return []
-    df = pd.read_csv(DATA_CSV).tail(limit)
-    return df.to_dict(orient="records")
