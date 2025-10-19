@@ -1048,3 +1048,375 @@
 1759827478: Client auto-5F6E121E-DA0D-29D8-E158-87DB9BD71FA2 closed its connection.
 1759827479: mosquitto version 2.0.22 terminating
 1759827479: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759847918: mosquitto version 2.0.22 starting
+1759847918: Config loaded from /mosquitto/config/mosquitto.conf.
+1759847918: Opening ipv4 listen socket on port 1888.
+1759847918: Opening ipv6 listen socket on port 1888.
+1759847918: mosquitto version 2.0.22 running
+1759847918: New connection from 172.18.0.1:38764 on port 1888.
+1759847918: New client connected from 172.18.0.1:38764 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759847918: No will message specified.
+1759847918: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759847918: Received SUBSCRIBE from ESP32-80:F3:DA:5E:2A:24
+1759847918: 	esp32/dht11 (QoS 0)
+1759847918: Sending SUBACK to ESP32-80:F3:DA:5E:2A:24
+1759847918: Sending PUBLISH to ESP32-80:F3:DA:5E:2A:24 (d0, q0, r1, m0, 'esp32/dht11', ... (41 bytes))
+1759847918: Received SUBSCRIBE from ESP32-80:F3:DA:5E:2A:24
+1759847918: 	warehouse/+/sensors (QoS 0)
+1759847918: Sending SUBACK to ESP32-80:F3:DA:5E:2A:24
+1759847918: Received SUBSCRIBE from ESP32-80:F3:DA:5E:2A:24
+1759847918: 	control/esp32 (QoS 0)
+1759847918: Sending SUBACK to ESP32-80:F3:DA:5E:2A:24
+1759847919: New connection from 172.18.0.4:54603 on port 1888.
+1759847919: New client connected from 172.18.0.4:54603 as auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8 (p2, c1, k60).
+1759847919: No will message specified.
+1759847919: Sending CONNACK to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8 (0, 0)
+1759847934: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759847934: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759847950: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759847950: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759847966: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759847966: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759847979: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759847979: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759847979: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759847982: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759847982: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759847998: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759847998: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848014: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848014: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848030: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848030: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848039: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848039: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848040: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848046: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848046: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848062: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848062: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848078: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848078: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848094: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848094: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848099: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848099: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848101: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848110: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848110: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848126: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848126: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848142: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848142: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848158: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848158: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848159: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848159: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848162: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848174: Received PINGREQ from ESP32-80:F3:DA:5E:2A:24
+1759848174: Sending PINGRESP to ESP32-80:F3:DA:5E:2A:24
+1759848184: Client ESP32-80:F3:DA:5E:2A:24 closed its connection.
+1759848220: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848220: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848223: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848280: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848280: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848284: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848340: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848340: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848345: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848361: New connection from 172.18.0.1:41184 on port 1888.
+1759848361: New client connected from 172.18.0.1:41184 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759848361: No will message specified.
+1759848361: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759848368: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (267 bytes))
+1759848378: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848388: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848398: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848400: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848400: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848406: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848409: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (274 bytes))
+1759848419: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (274 bytes))
+1759848429: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848439: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848449: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (276 bytes))
+1759848459: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (277 bytes))
+1759848460: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848460: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848467: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848469: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (277 bytes))
+1759848479: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (279 bytes))
+1759848489: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (281 bytes))
+1759848499: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (281 bytes))
+1759848509: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/test', ... (279 bytes))
+1759848520: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848520: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848528: New connection from 172.18.0.1:54214 on port 1888.
+1759848528: Client ESP32-80:F3:DA:5E:2A:24 already connected, closing old connection.
+1759848528: New client connected from 172.18.0.1:54214 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759848528: No will message specified.
+1759848528: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759848528: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848536: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (267 bytes))
+1759848546: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848556: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (274 bytes))
+1759848566: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (272 bytes))
+1759848576: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848580: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848580: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848586: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848589: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848596: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848607: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848617: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (276 bytes))
+1759848627: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (272 bytes))
+1759848637: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848640: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848640: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848647: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848650: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848657: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759848667: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848677: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848687: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848697: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848700: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848700: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848707: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848711: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848717: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848727: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848737: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848747: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848757: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848760: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848760: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848767: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848772: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848778: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848788: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759848798: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759848808: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759848818: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848820: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848820: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848828: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848833: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848838: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848848: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848858: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848868: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848878: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848880: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848880: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848888: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848894: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848898: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848908: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848918: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848928: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848939: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848940: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848940: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759848949: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848955: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759848959: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848969: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848979: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759848989: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759848999: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759849000: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849000: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849009: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849016: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849019: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849029: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849039: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849049: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849059: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759849061: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849061: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849069: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759849077: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849079: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (279 bytes))
+1759849089: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849099: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (281 bytes))
+1759849121: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849121: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849122: Client ESP32-80:F3:DA:5E:2A:24 has exceeded timeout, disconnecting.
+1759849125: New connection from 172.18.0.1:40590 on port 1888.
+1759849125: New client connected from 172.18.0.1:40590 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759849125: No will message specified.
+1759849125: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759849133: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (268 bytes))
+1759849138: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849143: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849153: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849156: New connection from 172.18.0.1:41808 on port 1888.
+1759849156: Client ESP32-80:F3:DA:5E:2A:24 already connected, closing old connection.
+1759849156: New client connected from 172.18.0.1:41808 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759849156: No will message specified.
+1759849156: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759849164: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (266 bytes))
+1759849174: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849181: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849181: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849184: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849194: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849199: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849204: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759849214: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759849224: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849234: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759849241: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849241: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849245: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849255: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (275 bytes))
+1759849260: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849265: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849275: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849285: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (280 bytes))
+1759849295: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849301: Received PINGREQ from auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849301: Sending PINGRESP to auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8
+1759849304: Client auto-6A25CF80-DEC4-3FA8-6354-D1B49CD831C8 closed its connection.
+1759849305: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849305: mosquitto version 2.0.22 terminating
+1759849305: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849321: mosquitto version 2.0.22 starting
+1759849321: Config loaded from /mosquitto/config/mosquitto.conf.
+1759849321: Opening ipv4 listen socket on port 1888.
+1759849321: Opening ipv6 listen socket on port 1888.
+1759849321: mosquitto version 2.0.22 running
+1759849323: New connection from 172.18.0.1:40326 on port 1888.
+1759849323: New client connected from 172.18.0.1:40326 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759849323: No will message specified.
+1759849323: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759849324: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849325: New connection from 172.18.0.4:54169 on port 1888.
+1759849325: New client connected from 172.18.0.4:54169 as auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (p2, c1, k60).
+1759849325: No will message specified.
+1759849325: Sending CONNACK to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (0, 0)
+1759849325: Received SUBSCRIBE from auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849325: 	gateway1/node/nghia (QoS 0)
+1759849325: Sending SUBACK to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849334: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (280 bytes))
+1759849334: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (280 bytes))
+1759849344: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849344: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (282 bytes))
+1759849354: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (278 bytes))
+1759849354: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (278 bytes))
+1759849373: New connection from 172.18.0.1:42654 on port 1888.
+1759849373: Client ESP32-80:F3:DA:5E:2A:24 already connected, closing old connection.
+1759849373: New client connected from 172.18.0.1:42654 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759849373: No will message specified.
+1759849373: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759849378: New connection from 172.18.0.1:45598 on port 1888.
+1759849378: Client ESP32-80:F3:DA:5E:2A:24 already connected, closing old connection.
+1759849378: New client connected from 172.18.0.1:45598 as ESP32-80:F3:DA:5E:2A:24 (p2, c1, k15).
+1759849378: No will message specified.
+1759849378: Sending CONNACK to ESP32-80:F3:DA:5E:2A:24 (0, 0)
+1759849381: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849386: Received PINGREQ from auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849386: Sending PINGRESP to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849386: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (266 bytes))
+1759849386: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (266 bytes))
+1759849396: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849396: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849406: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849406: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849417: Received PUBLISH from ESP32-80:F3:DA:5E:2A:24 (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849417: Sending PUBLISH to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E (d0, q0, r0, m0, 'gateway1/node/nghia', ... (277 bytes))
+1759849424: Client ESP32-80:F3:DA:5E:2A:24 closed its connection.
+1759849442: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759849447: Received PINGREQ from auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849447: Sending PINGRESP to auto-96BDE4A5-70F6-BB13-8CCA-08AC76FE249E
+1759849451: mosquitto version 2.0.22 terminating
+1759849451: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949606: mosquitto version 2.0.22 starting
+1759949606: Config loaded from /mosquitto/config/mosquitto.conf.
+1759949606: Opening ipv4 listen socket on port 1888.
+1759949606: Opening ipv6 listen socket on port 1888.
+1759949606: mosquitto version 2.0.22 running
+1759949610: New connection from 172.18.0.5:54401 on port 1888.
+1759949610: New client connected from 172.18.0.5:54401 as auto-5137F307-983C-26D4-E60E-7D6A38D12BD4 (p2, c1, k60).
+1759949610: No will message specified.
+1759949610: Sending CONNACK to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4 (0, 0)
+1759949610: Received SUBSCRIBE from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949610: 	gateway1/node/nghia (QoS 0)
+1759949610: Sending SUBACK to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949667: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949670: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949670: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949728: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949731: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949731: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949789: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949791: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949791: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949850: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949851: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949851: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949911: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759949911: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949911: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949971: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949971: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759949972: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950031: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950031: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950033: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950091: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950091: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950094: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950151: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950151: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950155: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950211: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950211: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950216: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950271: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950271: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950277: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950331: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950331: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950338: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950391: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950391: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950399: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950451: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950451: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950460: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950511: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950511: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950521: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950572: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950572: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950582: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950632: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950632: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950643: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950692: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950692: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950704: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950752: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950752: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950765: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950812: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950812: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950826: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950872: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950872: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950887: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950932: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950932: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950948: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759950992: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759950992: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759951009: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759951052: Received PINGREQ from auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759951052: Sending PINGRESP to auto-5137F307-983C-26D4-E60E-7D6A38D12BD4
+1759951070: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1759951099: mosquitto version 2.0.22 terminating
+1759951099: Saving in-memory database to /mosquitto/data//mosquitto.db.

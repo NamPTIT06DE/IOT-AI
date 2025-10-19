@@ -4,15 +4,15 @@
 #include<PubSubClient.h>
 #include<WiFi.h>
 
-const char* wifi_name="HUAWEI P30 Pro";  
-const char* wifi_password="1234567890";  
+const char* wifi_name="Minh Nghia";  
+const char* wifi_password="12347890";  
 
-const char* mqtt_server="192.168.43.246";  
+const char* mqtt_server="192.168.1.159";  
 const int mqtt_port=1888;  
 
 
-const char* mac_id = "test"; 
-const char* topic = "gateway1/node/test";  
+const char* mac_id = "nghia"; 
+const char* topic = "gateway1/node/nghia";  
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -39,6 +39,7 @@ void setup() {
     Serial.print(".");
   }
   Serial.println();
+  Serial.println(WiFi.macAddress());
 }
 
 void connectMQTT(){
