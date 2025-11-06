@@ -70,9 +70,16 @@ float readLpgConcentration(float rs) {
 void updateFanState(float humidity) {
   bool prev = fanActive;
 
-  if (currentFanMode == NONE) fanActive = false;
-  else if (currentFanMode == AUTO) fanActive = (humidity > HUMIDITY_THRESHOLD);
-  else if (currentFanMode == MANUAL) fanActive = manualFanState;
+  if (currentFanMode == NONE) {
+    fanActive = false;
+  } else if (manualFanState) {
+    fanActive = true;
+  } else if (currentFanMode == AUTO) {
+    fanActive = (humidity > HUMIDITY_THRESHOLD);
+  } else {
+    fanActive = false;
+    currentFanMode = NONE;
+  }
 
   digitalWrite(FAN_PIN, fanActive ? HIGH : LOW);
   if (fanActive != prev)
