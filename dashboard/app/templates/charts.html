@@ -21,10 +21,56 @@
             color: white;
             margin-bottom: 2rem;
         }
+        .fan-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-switch.active {
+            background-color: #28a745;
+        }
+        .toggle-switch.warning {
+            background-color: #ffc107;
+        }
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+        .fan-label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+        .fan-status {
+            font-size: 0.9em;
+            color: #666;
+        }
     </style>
 </head>
 <body class="bg-light">
-    <!-- Navigation -->
+    <!-- Thanh điều hướng -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="/">
@@ -40,21 +86,45 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
+    <!-- Nội dung chính -->
     <div class="container my-4">
-        <!-- Back Button -->
+        <!-- Nút quay lại -->
         <div class="back-btn d-flex justify-content-between">
             <a href="/" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-1"></i>
                 Back to Nodes List
             </a>
-            <button id="refreshBtn" class="btn btn-primary" onclick="loadSensorData()">
-                <i class="fas fa-sync-alt me-1"></i>
-                Refresh Data
-            </button>
+            <div class="d-flex flex-column gap-2">
+                <!-- Điều khiển quạt -->
+                <div class="d-flex gap-3">
+                    <div class="fan-control">
+                        <i class="fas fa-fan"></i>
+                        <span class="fan-label">Manual Fan:</span>
+                        <div class="toggle-switch" id="fanManualToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="fan-status" id="fanManualStatus">OFF</span>
+                    </div>
+                    <div class="fan-control">
+                        <i class="fas fa-magic"></i>
+                        <span class="fan-label">Auto Fan:</span>
+                        <div class="toggle-switch" id="fanAutoToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="fan-status" id="fanAutoStatus">OFF</span>
+                    </div>
+                </div>
+                <!-- Nút làm mới -->
+                <div class="text-end">
+                    <button id="refreshBtn" class="btn btn-primary" onclick="loadSensorData()">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Refresh Data
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Node Info Card -->
+        <!-- Thẻ thông tin Node -->
         <div class="card node-info-card" id="nodeInfoCard" style="display: none;">
             <div class="card-body">
                 <h4 id="nodeTitle">Node Charts</h4>
@@ -62,10 +132,70 @@
             </div>
         </div>
 
-        <!-- Charts Container -->
+    <!-- KPI cards -->
+    <div id="kpiRow" class="row g-3 mb-3">
+            <div class="col-sm-6 col-md-3">
+                <div class="card text-white bg-danger">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small>Temp Max</small>
+                                <div id="kpiTempMax" class="fs-5 fw-bold">--</div>
+                            </div>
+                            <i class="fas fa-thermometer-half fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="card text-white bg-primary">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small>Temp Min</small>
+                                <div id="kpiTempMin" class="fs-5 fw-bold">--</div>
+                            </div>
+                            <i class="fas fa-temperature-low fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="card text-white bg-info">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small>Hum Max</small>
+                                <div id="kpiHumMax" class="fs-5 fw-bold">--</div>
+                            </div>
+                            <i class="fas fa-tint fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="card text-white bg-secondary">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small>Hum Min</small>
+                                <div id="kpiHumMin" class="fs-5 fw-bold">--</div>
+                            </div>
+                            <i class="fas fa-water fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div id="kpiDebug" class="alert alert-secondary small" role="status" style="margin-top:6px;">
+        KPI debug: initializing...
+    </div>
+
+        <!-- Container chứa biểu đồ -->
         <div id="chartsContainer">
             <div class="row">
-                <!-- Temperature Chart -->
+                <!-- Biểu đồ nhiệt độ -->
                 <div class="col-md-6 mb-4">
                     <div class="card">
                         <div class="card-header">
@@ -79,7 +209,7 @@
                     </div>
                 </div>
 
-                <!-- Humidity Chart -->
+                <!-- Biểu đồ độ ẩm -->
                 <div class="col-md-6 mb-4">
                     <div class="card">
                         <div class="card-header">
@@ -95,7 +225,7 @@
             </div>
         </div>
 
-        <!-- Loading State -->
+        <!-- Trạng thái đang tải -->
         <div id="loadingState" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -103,7 +233,7 @@
             <p class="mt-2">Loading sensor data...</p>
         </div>
 
-        <!-- No Data State -->
+        <!-- Trạng thái không có dữ liệu -->
         <div id="noDataState" class="text-center py-5" style="display: none;">
             <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
             <h5 class="text-muted">No sensor data available</h5>
@@ -111,7 +241,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Thư viện Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -121,21 +251,195 @@
         let charts = {};
         let updateInterval;
 
-        // Initialize page
+        // Trạng thái điều khiển quạt
+        let fanState = {
+            manual: false,
+            auto: false
+        };
+
+        // Lấy trạng thái quạt từ localStorage
+        function loadFanState() {
+            const savedState = localStorage.getItem(`fanState_${selectedNode}`);
+            if (savedState) {
+                try {
+                    fanState = JSON.parse(savedState);
+                    console.log('Loaded fan state from localStorage:', fanState);
+                    // Cập nhật UI theo trạng thái đã lưu
+                    setFanUI('manual', fanState.manual);
+                    setFanUI('auto', fanState.auto);
+                } catch (e) {
+                    console.error('Error loading fan state:', e);
+                }
+            }
+        }
+
+        // Lưu trạng thái quạt vào localStorage
+        function saveFanState() {
+            localStorage.setItem(`fanState_${selectedNode}`, JSON.stringify(fanState));
+            console.log('Saved fan state to localStorage:', fanState);
+        }
+
+        // Lấy KPI đã lưu từ localStorage cho node hiện tại
+        function loadSavedKPIs() {
+            if (!selectedNode || selectedNode === 'None') return;
+            try {
+                const raw = localStorage.getItem(`kpis_${selectedNode}`);
+                if (!raw) return;
+                const k = JSON.parse(raw);
+                if (!k) return;
+                document.getElementById('kpiTempMax').textContent = k.temp_max != null ? `${k.temp_max} °C` : '--';
+                document.getElementById('kpiTempMin').textContent = k.temp_min != null ? `${k.temp_min} °C` : '--';
+                document.getElementById('kpiHumMax').textContent = k.hum_max != null ? `${k.hum_max} %` : '--';
+                document.getElementById('kpiHumMin').textContent = k.hum_min != null ? `${k.hum_min} %` : '--';
+                // Show KPI row (let Bootstrap manage layout) - use empty string to clear inline style
+                document.getElementById('kpiRow').style.display = '';
+                console.log('Loaded saved KPIs for', selectedNode, k);
+                const dbg = document.getElementById('kpiDebug');
+                if (dbg) dbg.textContent = `Loaded saved KPIs for ${selectedNode}: ${JSON.stringify(k)}`;
+            } catch (e) {
+                console.error('Error loading saved KPIs:', e);
+                const dbg = document.getElementById('kpiDebug');
+                if (dbg) dbg.textContent = `Error loading saved KPIs: ${e}`;
+            }
+        }
+
+        // Lưu KPI vào localStorage cho node hiện tại
+        function saveKPIs(kpiObj) {
+            if (!selectedNode || selectedNode === 'None') return;
+            try {
+                // store numeric values (no units) and timestamp
+                const doc = {
+                    temp_max: kpiObj.temp_max != null ? Number(kpiObj.temp_max) : null,
+                    temp_min: kpiObj.temp_min != null ? Number(kpiObj.temp_min) : null,
+                    hum_max: kpiObj.hum_max != null ? Number(kpiObj.hum_max) : null,
+                    hum_min: kpiObj.hum_min != null ? Number(kpiObj.hum_min) : null,
+                    updated_at: Date.now()
+                };
+                localStorage.setItem(`kpis_${selectedNode}`, JSON.stringify(doc));
+                console.log('Saved KPIs for', selectedNode, doc);
+            } catch (e) {
+                console.error('Error saving KPIs:', e);
+            }
+        }
+
+        // Khởi tạo trang
         document.addEventListener('DOMContentLoaded', () => {
             if (selectedNode && selectedNode !== 'None') {
                 updateNodeInfo();
                 initializeCharts();
+                loadFanState(); // Khôi phục trạng thái quạt
+                loadSavedKPIs(); // Khôi phục KPI đã lưu nếu có
                 loadSensorData();
+                initializeFanControls();
                 
-                // Auto refresh every 5 seconds
+                // Tự động làm mới mỗi 5 giây
                 updateInterval = setInterval(loadSensorData, 5000);
             } else {
                 showNoDataState();
             }
         });
 
-        // Update node info display
+        // Khởi tạo các nút bật/tắt quạt
+        function initializeFanControls() {
+            const manualToggle = document.getElementById('fanManualToggle');
+            const autoToggle = document.getElementById('fanAutoToggle');
+            
+            manualToggle.addEventListener('click', () => {
+                toggleFan('manual');
+            });
+            
+            autoToggle.addEventListener('click', () => {
+                toggleFan('auto');
+            });
+        }
+
+        // Bật/tắt trạng thái quạt
+        function toggleFan(type) {
+            if (type === 'manual') {
+                fanState.manual = !fanState.manual;
+                updateFanUI('manual', fanState.manual);
+            } else if (type === 'auto') {
+                fanState.auto = !fanState.auto;
+                updateFanUI('auto', fanState.auto);
+            }
+            
+            // Lưu trạng thái vào localStorage
+            saveFanState();
+            
+            console.log('Fan state:', fanState);
+        }
+
+        // Chỉ cập nhật giao diện quạt (không gọi API)
+        function setFanUI(type, isActive) {
+            const toggle = document.getElementById(`fan${type.charAt(0).toUpperCase() + type.slice(1)}Toggle`);
+            const status = document.getElementById(`fan${type.charAt(0).toUpperCase() + type.slice(1)}Status`);
+
+            if (isActive) {
+                toggle.classList.add('active');
+                if (type === 'manual') {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.add('warning');
+                }
+                status.textContent = 'ON';
+                status.style.color = type === 'manual' ? '#28a745' : '#ffc107';
+            } else {
+                toggle.classList.remove('active', 'warning');
+                status.textContent = 'OFF';
+                status.style.color = '#666';
+            }
+        }
+
+        // Cập nhật giao diện + gửi lệnh điều khiển quạt tới API
+        async function updateFanUI(type, isActive) {
+            // 1) Cập nhật UI ngay lập tức để phản hồi nhanh
+            setFanUI(type, isActive);
+
+            // 2) Trích xuất mac_id từ selectedNode (ví dụ: gateway1/node/test -> test)
+            const macId = selectedNode ? selectedNode.split('/').pop() : 'unknown';
+
+            // 3) Chuẩn bị payload lệnh
+            const command = {
+                type: 'fan_command',
+                node_id: selectedNode,
+                mac_id: macId,
+                device: 'fan',
+                mode: type,       // 'manual' | 'auto'
+                active: isActive  // true | false
+            };
+
+            console.log('Sending fan command:', command);
+
+            // 4) Gửi lệnh 1 lần duy nhất
+            try {
+                const res = await fetch('/cmd', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(command)
+                });
+
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || (data?.status && data.status !== 'success')) {
+                    throw new Error(`Failed response: ${res.status} ${res.statusText} ${JSON.stringify(data)}`);
+                }
+
+                console.log('Fan command acknowledged:', data);
+            } catch (err) {
+                console.error('Error sending fan command:', err);
+
+                // Hoàn tác trạng thái UI nếu lỗi
+                if (type === 'manual') {
+                    fanState.manual = !isActive;
+                    setFanUI('manual', fanState.manual);
+                } else if (type === 'auto') {
+                    fanState.auto = !isActive;
+                    setFanUI('auto', fanState.auto);
+                }
+            }
+        }
+
+
+        // Cập nhật hiển thị thông tin node
         function updateNodeInfo() {
             const nodeInfoCard = document.getElementById('nodeInfoCard');
             const nodeTitle = document.getElementById('nodeTitle');
@@ -146,7 +450,7 @@
             nodeInfoCard.style.display = 'block';
         }
 
-        // Initialize charts for temperature and humidity
+        // Khởi tạo biểu đồ nhiệt độ và độ ẩm
         function initializeCharts() {
             const chartConfigs = [
                 { 
@@ -223,12 +527,12 @@
                 });
             });
 
-            // Hide loading, show charts
+            // Ẩn loading, hiển thị biểu đồ
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('chartsContainer').style.display = 'block';
         }
 
-        // Load sensor data from API
+        // Tải dữ liệu cảm biến từ API
         async function loadSensorData() {
             if (!selectedNode || selectedNode === 'None') return;
 
@@ -236,7 +540,7 @@
                 const timestamp = new Date().toLocaleTimeString();
                 console.log(`[${timestamp}] Loading data for node: ${selectedNode}`);
                 
-                // Try to get data from AI server API
+                // Thử lấy dữ liệu từ API server AI
                 const response = await fetch(`/api/sensor-data/${selectedNode}?limit=30`);
                 
                 if (response.ok) {
@@ -259,18 +563,18 @@
             }
         }
 
-        // Show no data state
+        // Hiển thị trạng thái không có dữ liệu
         function showNoDataState() {
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('chartsContainer').style.display = 'none';
             document.getElementById('noDataState').style.display = 'block';
         }
 
-        // Update charts with new data
+        // Cập nhật biểu đồ với dữ liệu mới
         function updateCharts(apiData) {
             console.log('Updating charts with data:', apiData);
             
-            // Extract data array from API response
+            // Trích xuất mảng dữ liệu từ phản hồi API
             let sensorData = [];
             if (apiData && apiData.status === 'success' && apiData.data) {
                 sensorData = apiData.data;
@@ -286,12 +590,14 @@
                 return;
             }
 
-            // Show charts container
+            // Hiển thị container biểu đồ
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('noDataState').style.display = 'none';
             document.getElementById('chartsContainer').style.display = 'block';
+    // Hiển thị KPI row (let Bootstrap handle row display)
+    document.getElementById('kpiRow').style.display = '';
 
-            // Extract time labels from data (use 'time' field or convert timestamp)
+            // Trích xuất nhãn thời gian từ dữ liệu (dùng trường 'time' hoặc chuyển đổi timestamp)
             const labels = sensorData.map(item => {
                 if (item.time) {
                     return item.time;
@@ -304,7 +610,7 @@
             
             console.log('Time labels:', labels);
             
-            // Update temperature chart
+            // Cập nhật biểu đồ nhiệt độ
             if (charts.temperatureChart) {
                 const tempData = sensorData.map(item => {
                     const temp = parseFloat(item.temperature);
@@ -317,7 +623,28 @@
                 charts.temperatureChart.update('none');
             }
 
-            // Update humidity chart
+            // Cập nhật KPI nhiệt độ
+            let tMax = null, tMin = null, hMax = null, hMin = null;
+            try {
+                const temps = sensorData.map(item => parseFloat(item.temperature)).filter(v => !isNaN(v));
+                if (temps.length > 0) {
+                    tMax = Math.max(...temps).toFixed(1);
+                    tMin = Math.min(...temps).toFixed(1);
+                    document.getElementById('kpiTempMax').textContent = `${tMax} °C`;
+                    document.getElementById('kpiTempMin').textContent = `${tMin} °C`;
+                    console.log('KPI Temps set', {tMax, tMin});
+                    const dbg = document.getElementById('kpiDebug');
+                    if (dbg) dbg.textContent = `Computed KPIs for ${selectedNode} - temp_max:${tMax}, temp_min:${tMin}`;
+                } else {
+                    document.getElementById('kpiTempMax').textContent = '--';
+                    document.getElementById('kpiTempMin').textContent = '--';
+                    console.log('KPI Temps cleared');
+                    const dbg = document.getElementById('kpiDebug');
+                    if (dbg) dbg.textContent = `No temperature KPIs (no valid temp values)`;
+                }
+            } catch (e) { console.error('KPI temp error', e); }
+
+            // Cập nhật biểu đồ độ ẩm
             if (charts.humidityChart) {
                 const humData = sensorData.map(item => {
                     const hum = parseFloat(item.humidity);
@@ -330,11 +657,47 @@
                 charts.humidityChart.update('none');
             }
 
+            // Cập nhật KPI độ ẩm
+            try {
+                const hums = sensorData.map(item => parseFloat(item.humidity)).filter(v => !isNaN(v));
+                if (hums.length > 0) {
+                    hMax = Math.max(...hums).toFixed(1);
+                    hMin = Math.min(...hums).toFixed(1);
+                    document.getElementById('kpiHumMax').textContent = `${hMax} %`;
+                    document.getElementById('kpiHumMin').textContent = `${hMin} %`;
+                    console.log('KPI Hums set', {hMax, hMin});
+                    const dbg = document.getElementById('kpiDebug');
+                    if (dbg) dbg.textContent += `; hum_max:${hMax}, hum_min:${hMin}`;
+                } else {
+                    document.getElementById('kpiHumMax').textContent = '--';
+                    document.getElementById('kpiHumMin').textContent = '--';
+                    console.log('KPI Hums cleared');
+                    const dbg = document.getElementById('kpiDebug');
+                    if (dbg) dbg.textContent += `; no humidity KPIs`;
+                }
+            } catch (e) { console.error('KPI hum error', e); }
+
+            // Lưu KPI vào localStorage (nếu có giá trị hợp lệ)
+            try {
+                const kpiObj = {
+                    temp_max: tMax !== null ? Number(tMax) : null,
+                    temp_min: tMin !== null ? Number(tMin) : null,
+                    hum_max: hMax !== null ? Number(hMax) : null,
+                    hum_min: hMin !== null ? Number(hMin) : null
+                };
+                // Nếu có ít nhất một giá trị hợp lệ thì lưu
+                if (kpiObj.temp_max !== null || kpiObj.temp_min !== null || kpiObj.hum_max !== null || kpiObj.hum_min !== null) {
+                    saveKPIs(kpiObj);
+                }
+            } catch (e) {
+                console.error('Error saving KPIs after compute:', e);
+            }
+
             const timestamp = new Date().toLocaleTimeString();
             console.log(`[${timestamp}] Charts updated successfully with ${sensorData.length} data points`);
         }
 
-        // Cleanup on page unload
+        // Dọn dẹp khi rời khỏi trang
         window.addEventListener('beforeunload', () => {
             if (updateInterval) {
                 clearInterval(updateInterval);

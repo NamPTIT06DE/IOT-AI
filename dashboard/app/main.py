@@ -21,13 +21,10 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
-    """Trang chính - không gọi API, để JavaScript lo"""
-    # ❌ Bỏ phần gọi API ở backend
-    # ✅ Chỉ render template trống, JavaScript sẽ load data
-    
+
     return templates.TemplateResponse("nodes.html", {
         "request": request,
-        "nodes": [],  # Trống, JavaScript sẽ load
+        "nodes": [],
         "ai_server_url": AI_SERVER_URL,
         "total_nodes": 0
     })
@@ -42,7 +39,6 @@ async def charts(request: Request, node: str = None):
 
 @app.get("/api/nodes")
 async def api_get_nodes():
-    """Proxy API: Get nodes list từ ai-server"""
     try:
         print(f"Dashboard: Proxying request to {AI_SERVER_URL}/get/nodes")
         async with httpx.AsyncClient() as client:
@@ -56,7 +52,6 @@ async def api_get_nodes():
 
 @app.get("/api/add-node")
 async def api_add_node(mac_id: str):
-    """Proxy API: Add new node"""
     try:
         print(f"Dashboard: Adding node {mac_id} via {AI_SERVER_URL}/add/node")
         async with httpx.AsyncClient() as client:
@@ -69,8 +64,7 @@ async def api_add_node(mac_id: str):
         return {"status": "error", "message": str(e)}
 
 @app.get("/api/sensor-data/{node_path:path}")
-async def api_get_sensor_data(node_path: str, limit: int = 20):
-    """Proxy API: Get sensor data for specific node"""
+async def api_get_sensor_data(node_path: str, limit: int = 30):
     try:
         print(f"Dashboard: Getting sensor data for node path: {node_path}")
         async with httpx.AsyncClient() as client:
@@ -82,9 +76,32 @@ async def api_get_sensor_data(node_path: str, limit: int = 20):
         print(f"Dashboard: Error getting sensor data: {e}")
         return {"status": "error", "message": str(e), "data": []}
 
+
+@app.get("/api/kpis/{node_path:path}")
+async def api_get_kpis(node_path: str):
+    try:
+        print(f"Dashboard: Proxying KPI GET to {AI_SERVER_URL}/kpis/{node_path}")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{AI_SERVER_URL}/kpis/{node_path}", timeout=10.0)
+            return response.json()
+    except Exception as e:
+        print(f"Dashboard: Error proxying KPI GET: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.put("/api/kpis/{node_path:path}")
+async def api_put_kpis(node_path: str, kpi: dict):
+    try:
+        print(f"Dashboard: Proxying KPI PUT to {AI_SERVER_URL}/kpis/{node_path} - payload: {kpi}")
+        async with httpx.AsyncClient() as client:
+            response = await client.put(f"{AI_SERVER_URL}/kpis/{node_path}", json=kpi, timeout=10.0)
+            return response.json()
+    except Exception as e:
+        print(f"Dashboard: Error proxying KPI PUT: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.get("/debug/test-connection")
 async def debug_test_connection():
-    """Debug endpoint để test connection tới ai-server"""
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{AI_SERVER_URL}/get/nodes", timeout=5.0)
@@ -100,3 +117,17 @@ async def debug_test_connection():
             "status": "error",
             "error": str(e)
         }
+
+@app.put("/cmd")
+async def cmd_sensor(command: dict):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.put(f"{AI_SERVER_URL}/cmd", json=command, timeout=5.0)
+            return response.json()
+    except Exception as e:
+        return {
+            "ai_server_url": AI_SERVER_URL,
+            "status": "error",
+            "error": str(e)
+        }
+    return {"status": "success"}

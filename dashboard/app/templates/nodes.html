@@ -123,14 +123,13 @@
         let nodesData = [];
         let refreshInterval;
 
-        // DOM Elements
+
         const loadingSpinner = document.getElementById('loadingSpinner');
         const nodesContainer = document.getElementById('nodesContainer');
         const emptyState = document.getElementById('emptyState');
         const refreshBtn = document.getElementById('refreshBtn');
         const totalNodesEl = document.getElementById('totalNodes');
 
-        // Show toast notification
         function showToast(message, type = 'success') {
             const toastHtml = `
                 <div class="toast align-items-center text-bg-${type} border-0" role="alert">
@@ -147,15 +146,13 @@
             toast.show();
         }
 
-        // Load nodes from API
         async function loadNodes() {
             try {
                 console.log('DEBUG: Starting to load nodes...');
                 console.log('DEBUG: AI_SERVER_URL =', AI_SERVER_URL);
                 
                 showLoading(true);
-                
-                // ✅ Try proxy API first, fallback to direct
+
                 let response;
                 try {
                     console.log('DEBUG: Trying proxy API /api/nodes');
@@ -206,7 +203,7 @@
                 const createdDate = new Date(node.created_at * 1000).toLocaleString();
                 const nodeId = node.node_id || 'Unknown';
                 const macId = node.mac_id || 'Unknown';
-                const status = Math.random() > 0.3 ? 'online' : 'offline'; // Simulate status
+                const status = Math.random() > 0.3 ? 'online' : 'offline'; 
                 
                 return `
                     <div class="col-md-6 col-lg-4 mb-3">
@@ -251,9 +248,6 @@
             updateTotalNodes();
         }
 
-
-
-        // Show/hide loading
         function showLoading(show) {
             if (show) {
                 loadingSpinner.style.display = 'block';
@@ -264,42 +258,31 @@
             }
         }
 
-        // Update total nodes count
         function updateTotalNodes() {
             totalNodesEl.textContent = nodesData.length;
         }
 
-        // Show empty state
         function showEmptyState() {
             nodesContainer.style.display = 'none';
             emptyState.style.display = 'block';
             updateTotalNodes();
         }
 
-
-
-        // View node details
         function viewNodeDetails(nodeId) {
-            // Navigate to charts page with specific node
             window.location.href = `/charts?node=${encodeURIComponent(nodeId)}`;
         }
 
-        // View charts for specific node
         function viewCharts(nodeId) {
             window.location.href = `/charts?node=${encodeURIComponent(nodeId)}`;
         }
 
-        // Send command to node
         function sendCommand(nodeId) {
-            // Simple prompt for now - you can make this a modal
             const command = prompt(`Enter command for node ${nodeId}:`);
             if (command) {
-                // TODO: Implement command sending
                 showToast(`Command sent to ${nodeId}: ${command}`, 'info');
             }
         }
 
-        // Event listeners
         refreshBtn.addEventListener('click', () => {
             refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             loadNodes().finally(() => {
@@ -307,7 +290,6 @@
             });
         });
 
-        // Auto refresh every 30 seconds
         function startAutoRefresh() {
             refreshInterval = setInterval(loadNodes, 30000);
         }
@@ -318,13 +300,11 @@
             }
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             loadNodes();
             startAutoRefresh();
         });
 
-        // Stop auto refresh when page is hidden
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopAutoRefresh();
