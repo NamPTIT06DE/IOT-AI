@@ -18,18 +18,24 @@
 
 DHT dht(DHT_PIN, DHT_TYPE);
 float Ro = -1.0;
-unsigned long lastSendTime = 0;
-unsigned long lastBeepTime = 0;
+
+// KHOẢNG THỜI GIAN
+unsigned long lastSensorReadTime = 0;
+unsigned long lastGatewaySendTime = 0;
+const long SENSOR_READ_INTERVAL = 2000; // Đọc cảm biến mỗi 2 giây
+const long GATEWAY_SEND_INTERVAL = 3000; // Gửi dữ liệu mỗi 3 giây
 
 // NGƯỠNG
 const float HUMIDITY_THRESHOLD = 80.0;
-const float WARNING_LEVEL = 3700.0;
-const float DANGER_LEVEL  = 4000.0;
+const float WARNING_LEVEL = 700.0;
+const float DANGER_LEVEL  = 1000.0;
 
 // QUẠT
 enum FanMode { NONE, AUTO, MANUAL };
 FanMode currentFanMode = NONE;
 bool fanActive = false;
+bool fanActiveAuto = false;
+bool fanActiveManual = false;
 bool manualFanState = false;
 
 // CẤU TRÚC DỮ LIỆU
@@ -38,6 +44,10 @@ struct SensorReading {
   int adcValue;
   unsigned long timestamp;
 };
+
+// BIẾN TOÀN CỤC
+SensorReading currentReading;
+String localMacAddress = "";
 
 // MQ2 HÀM
 float calculateSensorResistance(int adcValue) {
@@ -69,59 +79,42 @@ float readLpgConcentration(float rs) {
 // ĐIỀU KHIỂN QUẠT
 void updateFanState(float humidity) {
   bool prev = fanActive;
+  bool shouldBeOn = false;
 
-  if (currentFanMode == NONE) {
-    fanActive = false;
-  } else if (manualFanState) {
-    fanActive = true;
-  } else if (currentFanMode == AUTO) {
-    fanActive = (humidity > HUMIDITY_THRESHOLD);
+  // LOGIC ƯU TIÊN
+  if (fanActiveManual) {
+    shouldBeOn = true;
+  } else if (fanActiveAuto) {
+    shouldBeOn = (humidity > HUMIDITY_THRESHOLD);
   } else {
-    fanActive = false;
-    currentFanMode = NONE;
+    shouldBeOn = false;
   }
 
-  digitalWrite(FAN_PIN, fanActive ? HIGH : LOW);
-  if (fanActive != prev)
-    Serial.printf("[NODE] Fan %s (mode: %d)\n", fanActive ? "BẬT" : "TẮT", currentFanMode);
+  // Cập nhật trạng thái vật lý và biến toàn cục
+  digitalWrite(FAN_PIN, shouldBeOn ? HIGH : LOW);
+  fanActive = shouldBeOn;
+
+  if (fanActive != prev) {
+    Serial.printf("[NODE] Fan %s (Manual: %d, Auto: %d)\n", 
+                  fanActive ? "BẬT" : "TẮT", 
+                  fanActiveManual, 
+                  fanActiveAuto);
+  }
 }
 
 // ĐIỀU KHIỂN CÒI
 void updateBuzzer(float adcValue) {
   static bool buzzerState = false;
   static unsigned long lastBeepTime = 0;
-  static unsigned long dangerStartTime = 0;
-  static bool dangerBeepActive = false;
-
   unsigned long now = millis();
 
-  bool warning = false;
-  bool danger = false;
-
   if (adcValue >= DANGER_LEVEL) {
-    danger = true;
-  } else if (adcValue >= WARNING_LEVEL) {
-    warning = true;
-  }
-
-  if (danger) {
-    // Khi vừa chuyển sang trạng thái NGUY HIỂM
-    if (!dangerBeepActive) {
-      dangerBeepActive = true;
-      dangerStartTime = now;
-      digitalWrite(BUZZER_PIN, HIGH);
-    }
-
-    // Sau 2 giây thì tắt còi
-    if (dangerBeepActive && (now - dangerStartTime >= 2000)) {
-      digitalWrite(BUZZER_PIN, LOW);
-    }
+    // Mức NGUY HIỂM: Kêu liên tục
+    digitalWrite(BUZZER_PIN, HIGH);
+    buzzerState = true;
   } 
-  else if (warning) {
-    // Khi hết NGUY HIỂM thì reset lại trạng thái
-    dangerBeepActive = false;
-
-    // Mức cảnh báo 1 — kêu ngắt quãng
+  else if (adcValue >= WARNING_LEVEL) {
+    // Mức CẢNH BÁO: Kêu ngắt quãng (500ms BẬT, 500ms TẮT)
     if (now - lastBeepTime > 500) {
       buzzerState = !buzzerState;
       digitalWrite(BUZZER_PIN, buzzerState ? HIGH : LOW);
@@ -129,9 +122,9 @@ void updateBuzzer(float adcValue) {
     }
   } 
   else {
-    // Không nguy hiểm, không cảnh báo
+    // An toàn: TẮT còi
     digitalWrite(BUZZER_PIN, LOW);
-    dangerBeepActive = false;
+    buzzerState = false;
   }
 }
 
@@ -151,6 +144,26 @@ SensorReading readSensors() {
   return r;
 }
 
+// GỬI DỮ LIỆU LÊN GATEWAY
+void sendDataToGateway(SensorReading s) {
+  StaticJsonDocument<256> doc;
+  doc["type"] = "UART";
+  doc["MAC_Id"] = localMacAddress;
+  JsonObject d = doc.createNestedObject("data");
+  d["temperature"] = s.temperature;
+  d["humidity"] = s.humidity;
+  d["adc_value"] = s.adcValue;
+  d["co_ppm"] = s.coPPM;
+  d["lpg_ppm"] = s.lpgPPM;
+
+  char buffer[256];
+  size_t len = serializeJson(doc, buffer);
+
+  Serial2.write((uint8_t*)buffer, len);
+  Serial2.write('\n');
+  Serial.printf("[NODE → GATEWAY] %s\n", buffer);
+}
+
 // NHẬN DỮ LIỆU TỪ GATEWAY QUA UART
 void handleUARTCommand() {
   if (!Serial2.available()) return;
@@ -166,31 +179,38 @@ void handleUARTCommand() {
 
   const char* type = doc["type"] | "undefined";
   if (strcmp(type, "fan_command") != 0) return;
+  
+  const char* targetMac = doc["mac_id"] | "undefined";
+  
+  if (localMacAddress.compareTo(targetMac) != 0) {
+    Serial.printf("[NODE] Bỏ qua lệnh: MAC không khớp...\n");
+    return;
+  }
 
+  Serial.println("[NODE] Lệnh đúng địa chỉ MAC, đang xử lý...");
+  
   const char* mode = doc["mode"] | "none";
   bool active = doc["active"] | false;
 
+  // CẬP NHẬT CÁC CÔNG TẮC TRẠNG THÁI
   if (strcmp(mode, "manual") == 0) {
-    currentFanMode = MANUAL;
-    manualFanState = active;
-    fanActive = active;
+    fanActiveManual = active;
   } else if (strcmp(mode, "auto") == 0) {
-    currentFanMode = AUTO;
-    fanActive = active;
-  } else {
-    currentFanMode = NONE;
-    manualFanState = false;
-    fanActive = false;
+    fanActiveAuto = active;
+  } else if (strcmp(mode, "none") == 0) {
+    fanActiveManual = false;
+    fanActiveAuto = false;
   }
 
-  digitalWrite(FAN_PIN, fanActive ? HIGH : LOW);
-  Serial.printf("[NODE] Fan command → mode: %s | state: %s\n",
-                mode, fanActive ? "BẬT" : "TẮT");
+  updateFanState(currentReading.humidity); 
+
+  Serial.printf("[NODE] Lệnh nhận: mode: %s, active: %s\n",
+                mode, active ? "true" : "false");
 }
 
 // SETUP
 void setup() {
-  Serial.begin(115200);  // debug
+  Serial.begin(115200);
   Serial2.begin(115200, SERIAL_8N1, 16, 17);  // RX=D16, TX=D17
   pinMode(FAN_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
@@ -198,40 +218,32 @@ void setup() {
   digitalWrite(BUZZER_PIN, LOW);
   dht.begin();
 
+  localMacAddress = WiFi.macAddress();
+  Serial.printf("[NODE] Địa chỉ MAC của tôi là: %s\n", localMacAddress.c_str());
+
   Serial.println("Hiệu chuẩn MQ-2...");
   Ro = calibrateRo(30);
   Serial.printf("Ro = %.3f\n", Ro);
+
+  currentReading = readSensors(); 
+  updateFanState(currentReading.humidity);
 }
 
 // LOOP
 void loop() {
-  handleUARTCommand();
+  unsigned long now = millis();
 
-  if (millis() - lastSendTime >= 3000) {
-    lastSendTime = millis();
+  handleUARTCommand(); 
 
-    SensorReading s = readSensors();
-    updateFanState(s.humidity);
-    updateBuzzer(s.adcValue);
-
-    StaticJsonDocument<256> doc;
-    doc["type"] = "UART";
-    doc["MAC_Id"] = WiFi.macAddress();
-    JsonObject d = doc.createNestedObject("data");
-    d["temperature"] = s.temperature;
-    d["humidity"] = s.humidity;
-    d["adc_value"] = s.adcValue;
-    d["co_ppm"] = s.coPPM;
-    d["lpg_ppm"] = s.lpgPPM;
-
-    char buffer[256];
-    size_t len = serializeJson(doc, buffer);
-
-    Serial2.write((uint8_t*)buffer, len);
-    Serial2.write('\n');
-    Serial.printf("[NODE → GATEWAY] %s\n", buffer);
+  if (now - lastSensorReadTime >= SENSOR_READ_INTERVAL) {
+    lastSensorReadTime = now;
+    currentReading = readSensors();
+    updateFanState(currentReading.humidity); 
   }
 
-  // Kiểm tra còi thường xuyên hơn
-  updateBuzzer(analogRead(MQ2_PIN));
+  if (now - lastGatewaySendTime >= GATEWAY_SEND_INTERVAL) {
+    lastGatewaySendTime = now;
+    sendDataToGateway(currentReading);
+  }
+  updateBuzzer(currentReading.adcValue); 
 }
