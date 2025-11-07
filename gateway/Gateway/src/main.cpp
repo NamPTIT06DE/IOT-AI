@@ -1,170 +1,96 @@
 #include <Arduino.h>
-#include<DHT.h>
-#include<ArduinoJson.h>
-#include<PubSubClient.h>
-#include<WiFi.h>
-
-const char* wifi_name="HUAWEI P30 Pro";  
-const char* wifi_password="1234567890";  
-
-const char* mqtt_server="192.168.43.246";  
-const int mqtt_port=1888;  
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 
-const char* mac_id = "test"; 
-const char* topic = "gateway1/node/test";  
+const char* wifi_name = "HUAWEI P30 Pro";
+const char* wifi_password = "1234567890";
+const char* mqtt_server = "192.168.43.246";
+const int mqtt_port = 1888; 
+const char* base_topic = "gateway1/node/";
+const char* cmd_topic = "gateway1/cmd";
 
 WiFiClient espClient;
-PubSubClient client(espClient);
-DHT dht(4, DHT11); 
+PubSubClient mqttClient(espClient);
 
-struct SensorReading {
-  float temperature;
-  float humidity;
-  unsigned long timestamp;
-};
+#define JSON_DOC_SIZE 512
 
-SensorReading sensorBuffer[5];   // Buffer để lưu 5 lần đọc (10s / 2s = 5)
-int bufferIndex = 0;             // Index hiện tại trong buffer
-unsigned long lastReadTime = 0;  // Lần đọc sensor cuối
-unsigned long lastSendTime = 0;  // Lần gửi data cuối
-
-void setup() {
-  Serial.begin(115200);
-  dht.begin();
-  WiFi.begin(wifi_name,wifi_password);
-  Serial.println("Connecting to WiFi");
-  while(WiFi.status()!=WL_CONNECTED){
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-}
-
-void connectMQTT(){
-  client.setServer(mqtt_server, mqtt_port);
-  client.setBufferSize(2048);  // Tăng buffer size cho MQTT client
-  
-  int attempts = 0;
-  while(!client.connected() && attempts < 5){
-    Serial.printf("Connecting to MQTT... (attempt %d/5)\n", attempts + 1);
-    String clientId = "ESP32-" + WiFi.macAddress();
-    
-    if(client.connect(clientId.c_str())){
-      Serial.println("✓ MQTT connected!");
-      Serial.printf("Client ID: %s\n", clientId.c_str());
-      break;
+void reconnectMQTT() {
+  while (!mqttClient.connected()) {
+    String clientId = "ESP32-Gateway-" + WiFi.macAddress();
+    if (mqttClient.connect(clientId.c_str())) {
+      mqttClient.subscribe(cmd_topic);
+      Serial.printf("MQTT connected, subscribed %s\n", cmd_topic);
     } else {
-      Serial.printf("✗ MQTT connection failed with state %d\n", client.state());
-      Serial.println("MQTT Error codes: -4=timeout, -3=connection lost, -2=connect failed, -1=disconnected, 1=bad protocol, 2=client rejected, 3=server unavailable, 4=bad credentials, 5=not authorized");
-      attempts++;
-      delay(3000);
+      Serial.println("MQTT reconnect failed, retrying...");
+      delay(1000);
     }
   }
-  
-  if(!client.connected()) {
-    Serial.println("Failed to connect to MQTT after 5 attempts");
-  }
-}
-void readSensor(){
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
-  
-  if(isnan(h) || isnan(t)){
-    Serial.println("Failed to read from DHT sensor");
-    return;
-  }
-  
-  // Lưu vào buffer
-  sensorBuffer[bufferIndex].temperature = t;
-  sensorBuffer[bufferIndex].humidity = h;
-  sensorBuffer[bufferIndex].timestamp = millis() / 1000;
-  
-  Serial.printf("Reading %d: T=%.2f°C, H=%.2f%%, Time=%lu\n", 
-                bufferIndex + 1, t, h, sensorBuffer[bufferIndex].timestamp);
-  
-  bufferIndex++;
-  
-  // Reset buffer khi đầy
-  if(bufferIndex >= 5) {
-    bufferIndex = 0;
-  }
 }
 
-void publishData(){
-  // Kiểm tra kết nối MQTT trước khi publish
-  if(!client.connected()) {
-    Serial.println("MQTT not connected, skipping publish");
-    return;
+bool publishToMQTT(const String& macId, const String& payload) {
+  String topic = String(base_topic) + macId;
+  bool ok = mqttClient.publish(topic.c_str(), payload.c_str());
+  Serial.printf("[MQTT → %s] %s\n", topic.c_str(), ok ? "OK" : "Fail");
+  return ok;
+}
+// nhan lenh tu mqtt -> uart
+void onMqttMessage(char* topic, byte* payload, unsigned int length) {
+  String msg;
+  for (unsigned int i = 0; i < length; i++) msg += (char)payload[i];
+  Serial.printf("[MQTT → UART] %s\n", msg.c_str());
+
+  StaticJsonDocument<JSON_DOC_SIZE> doc;
+  if (deserializeJson(doc, msg)) return;
+  const char* macId = doc["MAC_Id"] | "";
+
+  // Với ví dụ hiện tại, chỉ có Node 1 kết nối UART2
+  Serial2.println(msg);
+}
+
+// ==== SETUP ====
+void setup() {
+  Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, 16, 17); // UART2 cho Node 1
+  Serial1.begin(115200, SERIAL_8N1, 19, 18); // UART1 cho Node 2
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(wifi_name, wifi_password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    Serial.print(".");
   }
-  
-  // Tạo JSON theo format mà AI server mong đợi
-  StaticJsonDocument<2048> doc;  // Tăng buffer size
-  doc["MAC_Id"] = mac_id;
-  
-  // Tạo array data với 5 phần tử
-  JsonArray dataArray = doc.createNestedArray("data");
-  
-  for(int i = 0; i < 5; i++) {
-    JsonObject sensorReading = dataArray.createNestedObject();
-    sensorReading["temperature"] = round(sensorBuffer[i].temperature * 100) / 100.0;  // Làm tròn 2 chữ số
-    sensorReading["humidity"] = round(sensorBuffer[i].humidity * 100) / 100.0;
-    sensorReading["timestamp"] = sensorBuffer[i].timestamp;
-  }
-  
-  // Kiểm tra size của JSON
-  size_t jsonSize = measureJson(doc);
-  Serial.printf("JSON size: %d bytes\n", jsonSize);
-  
-  if(jsonSize > 1500) {  // MQTT có giới hạn message size
-    Serial.println("JSON too large, splitting not implemented yet");
-    return;
-  }
-  
-  char jsonBuffer[2048];  // Tăng buffer size
-  serializeJson(doc, jsonBuffer);
-  
-  // In ra Serial để debug
-  Serial.println("=== Publishing 5 sensor readings ===");
-  Serial.printf("MQTT State: %d (0=connected)\n", client.state());
-  Serial.print("Topic: ");
-  Serial.println(topic);
-  Serial.printf("Data length: %d\n", strlen(jsonBuffer));
-  Serial.print("Data: ");
-  Serial.println(jsonBuffer);
-  
-  // Publish data với retained = false và QoS = 0
-  bool publishResult = client.publish(topic, jsonBuffer, false);
-  
-  if(publishResult){
-    Serial.println("✓ Data published successfully");
-  } else {
-    Serial.printf("✗ Failed to publish data (MQTT state: %d)\n", client.state());
-    Serial.println("Reconnecting to MQTT...");
-    connectMQTT();  // Thử kết nối lại
-  }
-  Serial.println("=====================================");
+  Serial.printf("\n WiFi OK | IP: %s\n", WiFi.localIP().toString().c_str());
+
+  mqttClient.setServer(mqtt_server, mqtt_port);
+  mqttClient.setCallback(onMqttMessage);
+  reconnectMQTT();
 }
 
 
-void loop(){
-   if(!client.connected()){
-    connectMQTT();
-   }
-   
-   unsigned long currentTime = millis();
-   
-   // Đọc cảm biến mỗi 2 giây
-   if(currentTime - lastReadTime >= 2000) {
-     readSensor();
-     lastReadTime = currentTime;
-   }
-   
-   // Gửi dữ liệu mỗi 10 giây
-   if(currentTime - lastSendTime >= 10000) {
-     publishData();
-     lastSendTime = currentTime;
-   }
-   
-   delay(100);  
+void loop() {
+  if (!mqttClient.connected()) reconnectMQTT();
+  mqttClient.loop();
+
+  // Nhận từ Node 1 
+  if (Serial2.available()) {
+    String json = Serial2.readStringUntil('\n');
+    Serial.printf("[UART Node1 → MQTT] %s\n", json.c_str());
+
+    StaticJsonDocument<JSON_DOC_SIZE> doc;
+    if (deserializeJson(doc, json)) return;
+    String macId = doc["MAC_Id"].as<String>();
+    publishToMQTT(macId, json);
+  }
+
+  if (Serial1.available()) {
+    String json = Serial1.readStringUntil('\n');
+    Serial.printf("[UART Node2 → MQTT] %s\n", json.c_str());
+
+    StaticJsonDocument<JSON_DOC_SIZE> doc;
+    if (deserializeJson(doc, json)) return;
+    String macId = doc["MAC_Id"].as<String>();
+    publishToMQTT(macId, json);
+  }
 }
